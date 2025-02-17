@@ -14,6 +14,41 @@ migrate = Migrate(app, db)
 
 db.init_app(app)
 
+@app.route('/baked_goods', methods=['POST'])
+def create_baked_good():
+    name= request.form.get('name')
+    price = request.form.get('price')
+
+    new_baked_good = BakedGood(name=name, price=price)
+
+    db.session.add(new_baked_good)
+    db.session.commit()
+
+    return jsonify(new_baked_good.to_dict()), 201
+
+@app.route('/bakeries/<int:id>', methods=['PATCH'])
+def update_baker(id):
+    bakery = Bakery.query.get_or_404(id)
+
+    if request.method == 'PATCH':
+        name = request.form.get('name')
+        if name:
+            bakery.name = name
+            db.session.commit()
+        return jsonify(bakery.to_dict())
+    
+
+@app.route('/baked_goods/<int:id>', methods=['DELETE'])
+def delete_baked_good(id):
+    baked_good = BakedGood.query.get_or_404(id)
+    
+    # Remove the baked good from the database
+    db.session.delete(baked_good)
+    db.session.commit()  # Correct from sessioin to session
+    
+    return jsonify({"message": "Baked good successfully deleted"}), 200
+
+
 @app.route('/')
 def home():
     return '<h1>Bakery GET-POST-PATCH-DELETE API</h1>'
